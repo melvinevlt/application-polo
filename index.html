@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Polo</title>
+  <meta name="theme-color" content="#0f1115">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Polo">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icone-180.png">
+  <link rel="icon" href="icone-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header id="entete"></header>
+  <main id="vue"></main>
+  <nav id="onglets">
+    <button data-onglet="jour"><span>📊</span>Aujourd’hui</button>
+    <button data-onglet="sport"><span>🏋️</span>Sport</button>
+    <button data-onglet="repas"><span>🍽️</span>Repas</button>
+    <button data-onglet="courses"><span>🛒</span>Courses</button>
+    <button data-onglet="profil"><span>⚙️</span>Profil</button>
+  </nav>
+  <div id="calque" hidden></div>
+  <div id="toast" hidden></div>
+  <script src="exercices.js"></script>
+  <script src="idees.js"></script>
+  <script src="recettes.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
