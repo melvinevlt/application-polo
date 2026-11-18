@@ -25,7 +25,7 @@ function toast(msg, ms = 2200) {
 // ---------- Données ----------
 const CLE = 'polo-v1';
 const MODELE_GEMINI = 'gemini-2.5-flash';
-const VERSION_APP = 'V1.0 · 17/11/2026'; // à changer à chaque mise en ligne : Polo voit s'il a la dernière version
+const VERSION_APP = 'V1.1 · 18/11/2026'; // à changer à chaque mise en ligne : Polo voit s'il a la dernière version
 function etatVide() {
   return {
     profil: { sexe: 'H', age: '', taille: '', poids: '', objectif: 'recompo', montre: false },
@@ -724,33 +724,35 @@ function vuePhoto(seg) {
 // ---------- Recettes ----------
 const MACROS_R = Object.fromEntries(RECETTES.map((r) => [r.id, macrosRecette(r)]));
 const recetteParId = (id) => RECETTES.find((r) => r.id === id);
-const TYPES_R = { tout: 'Tout', 'petit-dej': '☀️ Petit-déj', repas: '🍽️ Repas', 'en-cas': '🍎 En-cas', fav: '⭐ Favoris' };
+const pictoR = (r) => r.photo ? `<img class="picto photo-r" src="${r.photo}" alt="" loading="lazy">` : `<div class="picto">${r.emoji}</div>`;
+const TYPES_R = { tout: 'Tout', 'petit-dej': '☀️ Petit-déj', repas: '🍽️ Repas', 'en-cas': '🍎 En-cas', j80: '💪 J80', fav: '⭐ Favoris' };
 let filtreRecettes = 'tout';
 function ligneRecette(r) {
   const m = MACROS_R[r.id], dansListe = S.courses.recettes.find((x) => x.id === r.id);
   return `<div class="liste-item exo" onclick="ouvrirRecette('${r.id}')">
-    <div class="picto">${r.emoji}</div>
+    ${pictoR(r)}
     <div class="info"><div class="titre" style="white-space:normal">${esc(r.nom)}${S.recettesFav.includes(r.id) ? ' ⭐' : ''}</div>
       <div class="doux petit">${arr(m.kcal)} kcal · P ${arr(m.p)} g · ${r.temps} min${r.source ? ` · <span class="puce">${esc(r.source)}</span>` : ''}</div></div>
     <button class="btn mini ${dansListe ? '' : 'principal'}" onclick="event.stopPropagation();ajouterAuxCourses('${r.id}',1)">${dansListe ? `🛒 ${dansListe.portions}` : '🛒 +'}</button></div>`;
 }
 function vueRecettes(seg) {
-  const liste = RECETTES.filter((r) => filtreRecettes === 'tout' || (filtreRecettes === 'fav' ? S.recettesFav.includes(r.id) : r.type === filtreRecettes));
+  const liste = RECETTES.filter((r) => filtreRecettes === 'tout' || (filtreRecettes === 'fav' ? S.recettesFav.includes(r.id) : filtreRecettes === 'j80' ? r.source === 'J80' : r.type === filtreRecettes));
   const nb = S.courses.recettes.reduce((a, x) => a + x.portions, 0);
   $('#vue').innerHTML = `${seg}
   <div class="filtres">${Object.entries(TYPES_R).map(([k, v]) => `<button class="${filtreRecettes === k ? 'on' : ''}" onclick="filtreRecettes='${k}';vueRepas()">${v}</button>`).join('')}</div>
   ${nb ? `<button class="btn" style="margin-bottom:12px" onclick="aller('courses')">🛒 Liste de courses : ${nb} portion${nb > 1 ? 's' : ''} → voir</button>` : ''}
   <div class="carte">${liste.map(ligneRecette).join('') || '<p class="doux">Aucune recette ici. Touche ⭐ dans une recette pour la mettre en favori.</p>'}</div>
-  <p class="doux petit">Produits bruts, peu transformés. Les valeurs sont calculées à partir des ingrédients. Touche 🛒 pour ajouter une portion à la liste de courses.</p>`;
+  <p class="doux petit">Recettes maison : produits bruts, valeurs calculées à partir des ingrédients. Recettes J80 : valeurs J80. Touche 🛒 pour ajouter une portion à la liste de courses.</p>`;
 }
 let portionsVue = 1;
 function ouvrirRecette(id, portions) {
   const r = recetteParId(id); if (!r) return;
   if (portions) portionsVue = portions; else portionsVue = S.courses.recettes.find((x) => x.id === id)?.portions || (r.prep ? 4 : 1);
   const m = MACROS_R[id], fav = S.recettesFav.includes(id);
-  ouvrirCalque(`<div class="ligne"><span style="font-size:40px">${r.emoji}</span><button class="x" onclick="fermerCalque()">✕</button></div>
+  ouvrirCalque(`<div class="ligne">${r.photo ? '<span></span>' : `<span style="font-size:40px">${r.emoji}</span>`}<button class="x" onclick="fermerCalque()">✕</button></div>
+  ${r.photo ? `<img class="apercu-photo" src="${r.photo}" alt="">` : ''}
   <h2 style="margin:4px 0">${esc(r.nom)}</h2>
-  <p class="doux petit">⏱️ ${r.temps} min${r.prep ? ' · se prépare à l’avance' : ''}</p>
+  <p class="doux petit">⏱️ ${r.temps} min${r.prep ? ' · se prépare à l’avance' : ''}${r.source ? ` · recette ${esc(r.source)}` : ''}</p>
   <div class="carte"><div class="grille3" style="text-align:center">
     <div><b style="font-size:22px">${arr(m.kcal)}</b><div class="doux petit">kcal / portion</div></div>
     <div><b style="color:var(--violet)">${arr(m.p)} g</b><div class="doux petit">protéines</div></div>
@@ -798,7 +800,7 @@ function blocRecettesDuJour(b, reste) {
   const n = liste.length, montre = [0, 1, 2].map((k) => liste[(decalageRecettes + k) % n]).filter((x, k, t) => x && t.indexOf(x) === k);
   return `<div class="carte"><h2>🍽️ Recettes pour tes ${arr(reste)} kcal</h2>
     ${manqueP > 25 ? `<p class="doux petit">Il te manque ${arr(manqueP)} g de protéines : les recettes en tiennent compte.</p>` : ''}
-    ${montre.map((r) => { const m = MACROS_R[r.id]; return `<div class="liste-item exo" onclick="ouvrirRecette('${r.id}')"><div class="picto">${r.emoji}</div><div class="info"><div class="titre" style="white-space:normal">${esc(r.nom)}</div><div class="doux petit">${arr(m.kcal)} kcal · P ${arr(m.p)} g · ${r.temps} min</div></div></div>`; }).join('')}
+    ${montre.map((r) => { const m = MACROS_R[r.id]; return `<div class="liste-item exo" onclick="ouvrirRecette('${r.id}')">${pictoR(r)}<div class="info"><div class="titre" style="white-space:normal">${esc(r.nom)}</div><div class="doux petit">${arr(m.kcal)} kcal · P ${arr(m.p)} g · ${r.temps} min</div></div></div>`; }).join('')}
     <div class="grille2" style="margin-top:10px">${n > 3 ? `<button class="btn" onclick="decalageRecettes+=3;vueJour()">🔄 Autres</button>` : ''}<button class="btn" onclick="ongletRepas='recettes';aller('repas')">📖 Toutes</button></div>
   </div>`;
 }
@@ -822,7 +824,7 @@ function vueCourses() {
     <div class="info"><div class="titre">${esc(a.nom)}</div>${a.ww ? `<div class="doux petit">${esc(a.ww)}</div>` : ''}</div><b class="petit">${esc(a.qte)}</b>
     ${a.extra ? `<button class="x" onclick="event.preventDefault();retirerExtra('${a.extra}')">×</button>` : ''}</label>`;
   $('#vue').innerHTML = `
-  ${S.courses.recettes.length ? `<div class="carte"><h2>Recettes de la semaine</h2>${S.courses.recettes.map(({ id, portions }) => { const r = recetteParId(id); return r ? `<div class="liste-item"><div class="picto">${r.emoji}</div><div class="info"><div class="titre" style="white-space:normal">${esc(r.nom)}</div></div>
+  ${S.courses.recettes.length ? `<div class="carte"><h2>Recettes de la semaine</h2>${S.courses.recettes.map(({ id, portions }) => { const r = recetteParId(id); return r ? `<div class="liste-item">${pictoR(r)}<div class="info"><div class="titre" style="white-space:normal">${esc(r.nom)}</div></div>
     <button class="btn mini" onclick="changerPortions('${id}',-1)">−</button><b>${portions}</b><button class="btn mini" onclick="changerPortions('${id}',1)">+</button></div>` : ''; }).join('')}</div>`
   : `<div class="carte"><h2>🛒 Liste vide</h2><p class="doux">Va dans <b>Repas → Recettes</b> et touche 🛒 sur ce que tu veux cuisiner : les ingrédients s’additionnent ici, rangés par rayon.</p><button class="btn principal" onclick="ongletRepas='recettes';aller('repas')">📖 Choisir des recettes</button></div>`}
   ${A.length ? rayons.map((ry, k) => { const L = A.filter((a) => a.r === k).sort((a, b) => a.coche - b.coche); return L.length ? `<div class="carte"><h2>${ry}</h2>${L.map(ligne).join('')}</div>` : ''; }).join('') : ''}

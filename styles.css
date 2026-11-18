@@ -153,3 +153,4 @@ details summary { cursor: pointer; padding: 4px 0; }
 .article input { width: 24px; height: 24px; flex: none; accent-color: var(--vert); }
 .article .info { flex: 1; min-width: 0; }
 .article.fait .titre, .article.fait b { text-decoration: line-through; color: var(--doux); }
+.picto.photo-r { object-fit: cover; padding: 0; }

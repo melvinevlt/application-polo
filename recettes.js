@@ -129,6 +129,7 @@ const RECETTES = [
 
 // Valeurs nutritionnelles d'une recette (une portion), calculées depuis les ingrédients.
 function macrosRecette(r) {
+  if (r.macros) return r.macros; // valeurs fournies (ex. J80)
   return r.i.reduce((t, [id, gr]) => {
     const x = INGREDIENTS[id]; const k = gr / 100;
     return { kcal: t.kcal + x.kcal * k, p: t.p + x.p * k, g: t.g + x.g * k, l: t.l + x.l * k };

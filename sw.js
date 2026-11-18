@@ -1,6 +1,6 @@
 // Mode hors ligne : l'app est mise en cache ; Gemini passe toujours par le réseau.
-const VERSION = 'polo-v4';
-const FICHIERS = ['./', 'index.html', 'styles.css', 'app.js', 'exercices.js', 'idees.js', 'recettes.js', 'manifest.webmanifest', 'icone-180.png', 'icone-192.png', 'icone-512.png'];
+const VERSION = 'polo-v5';
+const FICHIERS = ['./', 'index.html', 'styles.css', 'app.js', 'exercices.js', 'idees.js', 'recettes.js', 'recettes_j80.js', 'manifest.webmanifest', 'icone-180.png', 'icone-192.png', 'icone-512.png'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(VERSION).then((c) => c.addAll(FICHIERS))); self.skipWaiting(); });
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((k) => Promise.all(k.filter((x) => x !== VERSION).map((x) => caches.delete(x)))));
